@@ -50,10 +50,10 @@ exports.generateKeyPair = function() {
         );
         // 33 bytes
         // first byte = 5 (version byte)
-        const pubKey = publicDerBytes.slice(PUBLIC_KEY_DER_PREFIX.length-1, PUBLIC_KEY_DER_PREFIX.length + 32);
+        const pubKey = publicDerBytes.subarray(PUBLIC_KEY_DER_PREFIX.length-1, PUBLIC_KEY_DER_PREFIX.length + 32);
         pubKey[0] = 5;
     
-        const privKey = privateDerBytes.slice(PRIVATE_KEY_DER_PREFIX.length, PRIVATE_KEY_DER_PREFIX.length + 32);
+        const privKey = privateDerBytes.subarray(PRIVATE_KEY_DER_PREFIX.length, PRIVATE_KEY_DER_PREFIX.length + 32);
     
         return {
             pubKey,
