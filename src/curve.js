@@ -32,7 +32,7 @@ function scrubPubKeyFormat(pubKey) {
         throw new Error("Invalid public key");
     }
     if (pubKey.byteLength == 33) {
-        return pubKey.slice(1);
+        return pubKey.subarray(1);
     } else {
         console.error("WARNING: Expected pubkey of length 33, please report the ST and client that generated the pubkey");
         return pubKey;
