@@ -83,7 +83,7 @@ function verifyMAC(data, key, mac, length) {
     if (mac.length !== length || calculatedMac.length !== length || mac.byteLength !== calculatedMac.byteLength) {
         throw new Error("Bad MAC length");
     }
-    crypto.sign(key, data).then(function(calculated_mac) {
+    nodeCrypto.sign(key, data).then(function(calculated_mac) {
         if (!Buffer.compare(calculated_mac, mac)) {
             throw new Error("Bad MAC");
         }
