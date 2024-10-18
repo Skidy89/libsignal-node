@@ -40,30 +40,24 @@ function scrubPubKeyFormat(pubKey) {
 }
 
 exports.generateKeyPair = function() {
-    if(typeof nodeCrypto.generateKeyPairSync === 'function') {
-        const {publicKey: publicDerBytes, privateKey: privateDerBytes} = nodeCrypto.generateKeyPairSync(
-            'x25519',
-            {
-                publicKeyEncoding: { format: 'der', type: 'spki' },
-                privateKeyEncoding: { format: 'der', type: 'pkcs8' }
-            }
-        );
-        // 33 bytes
-        // first byte = 5 (version byte)
-        const pubKey = publicDerBytes.subarray(PUBLIC_KEY_DER_PREFIX.length-1, PUBLIC_KEY_DER_PREFIX.length + 32);
+    if (typeof generateKeyPairSync === 'function') {
+        const { publicKey: publicDerBytes, privateKey: privateDerBytes } = generateKeyPairSync('x25519', {
+            publicKeyEncoding: { format: 'der', type: 'spki' },
+            privateKeyEncoding: { format: 'der', type: 'pkcs8' }
+        });
+
+        const pubKey = Buffer.alloc(33);
         pubKey[0] = 5;
-    
+        publicDerBytes.copy(pubKey, 1, PUBLIC_KEY_DER_PREFIX.length, PUBLIC_KEY_DER_PREFIX.length + 32);
+        
         const privKey = privateDerBytes.subarray(PRIVATE_KEY_DER_PREFIX.length, PRIVATE_KEY_DER_PREFIX.length + 32);
-    
-        return {
-            pubKey,
-            privKey
-        };
+
+        return { pubKey, privKey };
     } else {
-        const keyPair = curveJs.generateKeyPair(nodeCrypto.randomBytes(32));
+        const { private: priv, public: pub } = curveJs.generateKeyPair(randomBytes(32));
         return {
-            privKey: Buffer.from(keyPair.private),
-            pubKey: Buffer.from(keyPair.public),
+            privKey: Buffer.from(priv),
+            pubKey: Buffer.from(pub),
         };
     }
 };

@@ -90,7 +90,7 @@ class SessionCipher {
             msg.ephemeralKey = session.currentRatchet.ephemeralKeyPair.pubKey;
             msg.counter = chain.chainKey.counter;
             msg.previousCounter = session.currentRatchet.previousCounter;
-            msg.ciphertext = crypto.encrypt(keys[0], data, keys[2].slice(0, 16));
+            msg.ciphertext = crypto.encrypt(keys[0], data, keys[2].subarray(0, 16));
             const msgBuf = protobufs.WhisperMessage.encode(msg).finish();
             const macInput = Buffer.alloc(msgBuf.byteLength + (33 * 2) + 1);
             macInput.set(ourIdentityKey.pubKey);
@@ -101,7 +101,7 @@ class SessionCipher {
             const result = Buffer.alloc(msgBuf.byteLength + 9);
             result[0] = this._encodeTupleByte(VERSION, VERSION);
             result.set(msgBuf, 1);
-            result.set(mac.slice(0, 8), msgBuf.byteLength + 1);
+            result.set(mac.subarray(0, 8), msgBuf.byteLength + 1);
             await this.storeRecord(record);
             let type, body;
             if (session.pendingPreKey) {
@@ -194,7 +194,7 @@ class SessionCipher {
         }
         return await this.queueJob(async () => {
             let record = await this.getRecord();
-            const preKeyProto = protobufs.PreKeyWhisperMessage.decode(data.slice(1));
+            const preKeyProto = protobufs.PreKeyWhisperMessage.decode(data.subarray(1));
             if (!record) {
                 if (preKeyProto.registrationId == null) {
                     throw new Error("No registrationId");
@@ -222,7 +222,7 @@ class SessionCipher {
         if (versions[1] > 3 || versions[0] < 3) {  // min version > 3 or max version < 3
             throw new Error("Incompatible version number on WhisperMessage");
         }
-        const messageProto = messageBuffer.slice(1, -8);
+        const messageProto = messageBuffer.subarray(1, -8);
         const message = protobufs.WhisperMessage.decode(messageProto);
         this.maybeStepRatchet(session, message.ephemeralKey, message.previousCounter);
         const chain = session.getChain(message.ephemeralKey);
@@ -247,7 +247,7 @@ class SessionCipher {
         macInput.set(messageProto, (33 * 2) + 1);
         // This is where we most likely fail if the session is not a match.
         // Don't misinterpret this as corruption.
-        crypto.verifyMAC(macInput, keys[1], messageBuffer.slice(-8), 8);
+        crypto.verifyMAC(macInput, keys[1], messageBuffer.subarray(-8), 8);
         const plaintext = crypto.decrypt(keys[0], message.ciphertext, keys[2].subarray(0, 16));
         delete session.pendingPreKey;
         return plaintext;

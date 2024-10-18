@@ -64,7 +64,7 @@ function deriveSecrets(input, salt, info, chunks) {
     const infoArray = new Uint8Array(info.byteLength + 1 + 32);
     infoArray.set(info, 32);
     infoArray[infoArray.length - 1] = 1;
-    const signed = [calculateMAC(PRK, Buffer.from(infoArray.slice(32)))];
+    const signed = [calculateMAC(PRK, Buffer.from(infoArray.subarray(32)))];
     if (chunks > 1) {
         infoArray.set(signed[signed.length - 1]);
         infoArray[infoArray.length - 1] = 2;
@@ -80,12 +80,19 @@ function deriveSecrets(input, salt, info, chunks) {
 
 function verifyMAC(data, key, mac, length) {
     const calculatedMac = calculateMAC(key, data).subarray(0, length);
-    if (mac.length !== length || calculatedMac.length !== length) {
+    if (mac.length !== length || calculatedMac.length !== length || mac.byteLength !== calculatedMac.byteLength) {
         throw new Error("Bad MAC length");
     }
-    if (!mac.equals(calculatedMac)) {
-        throw new Error("Bad MAC");
-    }
+    crypto.sign(key, data).then(function(calculated_mac) {
+        if (!Buffer.compare(calculated_mac, mac)) {
+            throw new Error("Bad MAC");
+        }
+        if (Buffer.compare(calculated_mac, mac)) {
+            throw new Error("Bad MAC");
+        }
+        
+    
+    })
 }
 
 module.exports = {
