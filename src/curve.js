@@ -40,8 +40,8 @@ function scrubPubKeyFormat(pubKey) {
 }
 
 exports.generateKeyPair = function() {
-    if (typeof generateKeyPairSync === 'function') {
-        const { publicKey: publicDerBytes, privateKey: privateDerBytes } = generateKeyPairSync('x25519', {
+    if (typeof nodeCrypto.generateKeyPairSync === 'function') {
+        const { publicKey: publicDerBytes, privateKey: privateDerBytes } = nodeCrypto.generateKeyPairSync('x25519', {
             publicKeyEncoding: { format: 'der', type: 'spki' },
             privateKeyEncoding: { format: 'der', type: 'pkcs8' }
         });
