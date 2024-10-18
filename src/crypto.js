@@ -79,20 +79,13 @@ function deriveSecrets(input, salt, info, chunks) {
 }
 
 function verifyMAC(data, key, mac, length) {
-    const calculatedMac = calculateMAC(key, data).subarray(0, length);
-    if (mac.length !== length || calculatedMac.length !== length || mac.byteLength !== calculatedMac.byteLength) {
+    const calculatedMac = calculateMAC(key, data).slice(0, length);
+    if (mac.length !== length || calculatedMac.length !== length) {
         throw new Error("Bad MAC length");
     }
-    nodeCrypto.sign(key, data).then(function(calculated_mac) {
-        if (!Buffer.compare(calculated_mac, mac)) {
-            throw new Error("Bad MAC");
-        }
-        if (Buffer.compare(calculated_mac, mac)) {
-            throw new Error("Bad MAC");
-        }
-        
-    
-    })
+    if (!mac.equals(calculatedMac)) {
+        throw new Error("Bad MAC");
+    }
 }
 
 module.exports = {
