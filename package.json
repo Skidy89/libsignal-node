@@ -12,7 +12,7 @@
   "license": "GPL-3.0",
   "main": "index.js",
   "dependencies": {
-    "libsignal-plugins": "github:skidy89/libsignal-plugins",
+    "libsignal-plugins": "1.10.0",
     "protobufjs": "6.8.8"
   },
   "devDependencies": {
