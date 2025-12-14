@@ -17,7 +17,7 @@
     "clean": "node-gyp clean"
   },
   "dependencies": {
-    "libsignal-plugins": "^1.0.7",
+    "libsignal-plugins": "github:skidy89/libsignal-plugins",
     "protobufjs": "6.8.8"
   },
   "devDependencies": {
