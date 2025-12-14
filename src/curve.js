@@ -41,7 +41,7 @@ exports.calculateSignature = function(privKey, message) {
 };
 
 
-exports.verifySignature = function(pubKey, msg, sig, isInit) {
+exports.verifySignature = function(pubKey, msg, sig, isInit = false) {
     return curve25519Rust.verifySignature(pubKey, msg, sig, isInit);
 };
 
