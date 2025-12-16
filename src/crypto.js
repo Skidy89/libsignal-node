@@ -3,7 +3,7 @@
 'use strict';
 
 const nodeCrypto = require('crypto');
-const assert = require('assert');
+const d = require('libsignal-plugins');
 
 
 function assertBuffer(value) {
@@ -55,26 +55,7 @@ function deriveSecrets(input, salt, info, chunks = 3) {
     assertBuffer(input);
     assertBuffer(salt);
     assertBuffer(info);
-    if (salt.length !== 32) {
-        throw new Error("Got salt of incorrect length");
-    }
-    assert(chunks >= 1 && chunks <= 3);
-
-    const PRK = calculateMAC(salt, input);
-    const signed = [];
-
-    let previous = Buffer.alloc(0);
-    for (let i = 1; i <= chunks; i++) {
-        const buffer = Buffer.concat([
-            previous,
-            info,
-            Buffer.from([i])
-        ]);
-        previous = calculateMAC(PRK, buffer);
-        signed.push(previous);
-    }
-
-    return signed;
+    return d.deriveSecrets(input, salt, info, chunks);
 }
 
 
