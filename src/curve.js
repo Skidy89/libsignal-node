@@ -1,4 +1,3 @@
-
 'use strict';
 const curve25519Rust = require('libsignal-plugins');
 
@@ -28,7 +27,7 @@ exports.createKeyPair = function(privKey) {
 
 
 exports.calculateAgreement = function(pubKey, privKey) {
-    return curve25519Rust.sharedSecret(pubKey, privKey);
+    return curve25519Rust.calculateAgreement(pubKey, privKey);
 };
 
 
