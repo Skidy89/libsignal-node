@@ -1,6 +1,9 @@
 "use strict";
 const d = require("libsignal-plugins");
 
+// this are just thin wrappers around the libsignal-plugins functions
+// to avoid breaking changes in the libsignal-node API
+
 function encrypt(key, data, iv) {
   return d.encryptData(key, data, iv);
 }
@@ -17,7 +20,6 @@ function hash(data) {
   return d.hash(data);
 }
 
-// Salts always end up being 32 bytes
 function deriveSecrets(input, salt, info, chunks = 3) {
   return d.deriveSecrets(input, salt, info, chunks);
 }
