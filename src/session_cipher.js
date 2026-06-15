@@ -93,6 +93,11 @@ class SessionCipher {
       if (chain.chainType === ChainType.RECEIVING) {
         throw new Error("Tried to encrypt on a receiving chain");
       }
+      console.log("Encrypting message with chain key counter: " + chain.chainKey.counter);
+      console.log("info", {
+        key: chain.chainKey.key.toString("hex"),
+        counter: chain.chainKey.counter,
+      });
       const res = signal.fillMessageKeys(
         chain.chainKey.key,
         chain.chainKey.counter,
@@ -111,6 +116,13 @@ class SessionCipher {
 
       const messageKey = chain.messageKeys[chain.chainKey.counter];
       delete chain.messageKeys[chain.chainKey.counter];
+      console.log("info", {
+        messageKey: messageKey.toString("hex"),
+        counter: chain.chainKey.counter,
+        pubKey: session.currentRatchet.ephemeralKeyPair.pubKey.toString("hex"),
+        remoteIdentityKey: remoteIdentityKey.toString("hex"),
+        ourIdentityKey: ourIdentityKey.pubKey.toString("hex"),
+      });
       const result = signal.encryptWhisperMessage(
         messageKey,
         data,
