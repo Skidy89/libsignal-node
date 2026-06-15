@@ -93,7 +93,6 @@ class SessionCipher {
       if (chain.chainType === ChainType.RECEIVING) {
         throw new Error("Tried to encrypt on a receiving chain");
       }
-
       const res = signal.fillMessageKeys(
         chain.chainKey.key,
         chain.chainKey.counter,
