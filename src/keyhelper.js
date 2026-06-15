@@ -1,7 +1,7 @@
 // vim: ts=4:sw=4:expandtab
 
 const curve = require("./curve");
-const plugins = require("libsignal-plugins");
+const plugins = require("@skidy89/libsignal-plugins");
 
 function isNonNegativeInteger(n) {
   return typeof n === "number" && n % 1 === 0 && n >= 0;

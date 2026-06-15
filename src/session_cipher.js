@@ -9,7 +9,7 @@ const curve = require("./curve");
 const errors = require("./errors");
 const protobufs = require("./protobufs");
 const queueJob = require("./queue_job");
-const signal = require("libsignal-plugins");
+const signal = require("@skidy89/libsignal-plugins");
 const VERSION = 3;
 
 function assertBuffer(value) {

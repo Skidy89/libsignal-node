@@ -6,7 +6,7 @@ const SessionRecord = require("./session_record");
 const curve = require("./curve");
 const errors = require("./errors");
 const queueJob = require("./queue_job");
-const signal = require("libsignal-plugins");
+const signal = require("@skidy89/libsignal-plugins");
 
 class SessionBuilder {
   constructor(storage, protocolAddress) {

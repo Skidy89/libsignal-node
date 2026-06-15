@@ -1,5 +1,5 @@
 "use strict";
-const curve25519Rust = require("libsignal-plugins");
+const curve25519Rust = require("@skidy89/libsignal-plugins");
 
 function validatePrivKey(privKey) {
   if (privKey === undefined) {
