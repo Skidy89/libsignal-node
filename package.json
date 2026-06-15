@@ -12,11 +12,12 @@
   "license": "GPL-3.0",
   "main": "index.js",
   "dependencies": {
-    "libsignal-plugins": "1.0.16",
+    "libsignal-plugins": "1.0.19",
     "protobufjs": "6.8.8"
   },
   "devDependencies": {
-    "eslint": "6.0.1"
+    "eslint": "6.0.1",
+    "prettier": "^3.8.4"
   },
   "engines": {
     "node": ">=14.0.0"

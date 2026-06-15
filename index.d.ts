@@ -18,10 +18,10 @@ export interface SignalStorage {
   isTrustedIdentity(
     identifier: string,
     identityKey: Uint8Array,
-    direction: number
+    direction: number,
   ): boolean;
   loadPreKey(
-    id: number | string
+    id: number | string,
   ): Promise<{ privKey: Buffer; pubKey: Buffer } | undefined>;
   removePreKey(id: number): void;
   loadSignedPreKey(): { privKey: Buffer; pubKey: Buffer };
