@@ -93,36 +93,24 @@ class SessionCipher {
       if (chain.chainType === ChainType.RECEIVING) {
         throw new Error("Tried to encrypt on a receiving chain");
       }
-      console.log("Encrypting message with chain key counter: " + chain.chainKey.counter);
-      console.log("info", {
-        key: chain.chainKey.key.toString("hex"),
-        counter: chain.chainKey.counter,
-      });
       const res = signal.fillMessageKeys(
         chain.chainKey.key,
         chain.chainKey.counter,
         chain.chainKey.counter + 1,
       );
 
-      chain.chainKey.key = res.chain_key;
+      chain.chainKey.key = res.chainKey;
       chain.chainKey.counter = res.counter;
 
-      let c = chain.chainKey.counter - res.message_keys.length;
+      let c = chain.chainKey.counter - res.messageKeys.length;
 
-      for (const key of res.message_keys) {
+      for (const key of res.messageKeys) {
         c++;
         chain.messageKeys[c] = key;
       }
 
       const messageKey = chain.messageKeys[chain.chainKey.counter];
       delete chain.messageKeys[chain.chainKey.counter];
-      console.log("info", {
-        messageKey: messageKey.toString("hex"),
-        counter: chain.chainKey.counter,
-        pubKey: session.currentRatchet.ephemeralKeyPair.pubKey.toString("hex"),
-        remoteIdentityKey: remoteIdentityKey.toString("hex"),
-        ourIdentityKey: ourIdentityKey.pubKey.toString("hex"),
-      });
       const result = signal.encryptWhisperMessage(
         messageKey,
         data,
@@ -293,12 +281,12 @@ class SessionCipher {
         message.counter,
       );
 
-      chain.chainKey.key = res.chain_key;
+      chain.chainKey.key = res.chainKey;
       chain.chainKey.counter = res.counter;
 
-      let c = res.counter - res.message_keys.length;
+      let c = res.counter - res.messageKeys.length;
 
-      for (const key of res.message_keys) {
+      for (const key of res.messageKeys) {
         chain.messageKeys[++c] = key;
       }
     }
@@ -316,6 +304,7 @@ class SessionCipher {
       messageKey,
       Buffer.alloc(32),
       Buffer.from(whisperMsgKeys),
+      3
     );
     const ourIdentityKey = await this.storage.getOurIdentity();
     const macInput = Buffer.alloc(messageProto.byteLength + 33 * 2 + 1);
@@ -381,12 +370,12 @@ class SessionCipher {
           previousCounter,
         );
 
-        previousRatchet.chainKey.key = res.chain_key;
+        previousRatchet.chainKey.key = res.chainKey;
         previousRatchet.chainKey.counter = res.counter;
 
-        let c = res.counter - res.message_keys.length;
+        let c = res.counter - res.messageKeys.length;
 
-        for (const key of res.message_keys) {
+        for (const key of res.messageKeys) {
           c++;
           previousRatchet.messageKeys[c] = key;
         }

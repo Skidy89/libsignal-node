@@ -167,6 +167,7 @@ class SessionBuilder {
       Buffer.from(sharedSecret),
       Buffer.alloc(32),
       Buffer.from("WhisperText"),
+      3
     );
     const session = SessionRecord.createEntry();
     session.registrationId = registrationId;
@@ -203,6 +204,7 @@ class SessionBuilder {
       sharedSecret,
       ratchet.rootKey,
       Buffer.from("WhisperRatchet"),
+      3
     );
     session.addChain(ratchet.ephemeralKeyPair.pubKey, {
       messageKeys: {},
