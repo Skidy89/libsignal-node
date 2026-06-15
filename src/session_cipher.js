@@ -111,37 +111,19 @@ class SessionCipher {
       }
 
       const messageKey = chain.messageKeys[chain.chainKey.counter];
-
-      const keys = signal.deriveSecrets(
-        messageKey,
-        Buffer.alloc(32),
-        Buffer.from(whisperMsgKeys),
-      );
-
       delete chain.messageKeys[chain.chainKey.counter];
-
-      const msg = protobufs.WhisperMessage.create({
-        ephemeralKey: session.currentRatchet.ephemeralKeyPair.pubKey,
-        counter: chain.chainKey.counter,
-        previousCounter: session.currentRatchet.previousCounter,
-        ciphertext: crypto.encrypt(keys[0], data, keys[2].subarray(0, 16)),
-      });
-
-      const msgBuf = protobufs.WhisperMessage.encode(msg).finish();
-
-      const macInput = Buffer.alloc(msgBuf.byteLength + 33 * 2 + 1);
-      macInput.set(ourIdentityKey.pubKey);
-      macInput.set(remoteIdentityKey, 33);
-      macInput[66] = this._encodeTupleByte(VERSION, VERSION);
-      macInput.set(msgBuf, 67);
-
-      const mac = crypto.calculateMAC(keys[1], macInput);
-
-      const result = Buffer.alloc(msgBuf.byteLength + 9);
-      result[0] = this._encodeTupleByte(VERSION, VERSION);
-      result.set(msgBuf, 1);
-      result.set(mac.subarray(0, 8), msgBuf.byteLength + 1);
-
+      const result = signal.encryptWhisperMessage(
+        messageKey,
+        data,
+        session.currentRatchet.ephemeralKeyPair.pubKey,
+        chain.chainKey.counter,
+        session.currentRatchet.previousCounter,
+        remoteIdentityKey,
+        {
+          ourIdentity: ourIdentityKey.pubKey,
+          version: VERSION,
+        },
+      );
       await this.storeRecord(record);
 
       let type, body;
@@ -285,7 +267,30 @@ class SessionCipher {
     if (chain.chainType === ChainType.SENDING) {
       throw new Error("Tried to decrypt on a sending chain");
     }
-    this.fillMessageKeys(chain, message.counter);
+    if (chain.chainKey.counter < message.counter) {
+      if (chain.chainKey.key === undefined) {
+        throw new errors.SessionError("Chain closed");
+      }
+
+      if (message.counter - chain.chainKey.counter > 500) {
+        throw new errors.SessionError("Over 500 messages into the future!");
+      }
+
+      const res = signal.fillMessageKeys(
+        chain.chainKey.key,
+        chain.chainKey.counter,
+        message.counter,
+      );
+
+      chain.chainKey.key = res.chain_key;
+      chain.chainKey.counter = res.counter;
+
+      let c = res.counter - res.message_keys.length;
+
+      for (const key of res.message_keys) {
+        chain.messageKeys[++c] = key;
+      }
+    }
     // do not access Object.prototype method 'hasOwnProperty' from target object
     if (
       !Object.prototype.hasOwnProperty.call(chain.messageKeys, message.counter)
@@ -355,9 +360,30 @@ class SessionCipher {
     const ratchet = session.currentRatchet;
     let previousRatchet = session.getChain(ratchet.lastRemoteEphemeralKey);
     if (previousRatchet) {
-      this.fillMessageKeys(previousRatchet, previousCounter);
-      delete previousRatchet.chainKey.key; // Close
+      if (previousRatchet.chainKey.counter < previousCounter) {
+        if (previousRatchet.chainKey.key === undefined) {
+          throw new errors.SessionError("Chain closed");
+        }
+        const res = signal.fillMessageKeys(
+          previousRatchet.chainKey.key,
+          previousRatchet.chainKey.counter,
+          previousCounter,
+        );
+
+        previousRatchet.chainKey.key = res.chain_key;
+        previousRatchet.chainKey.counter = res.counter;
+
+        let c = res.counter - res.message_keys.length;
+
+        for (const key of res.message_keys) {
+          c++;
+          previousRatchet.messageKeys[c] = key;
+        }
+      }
+
+      delete previousRatchet.chainKey.key;
     }
+
     this.calculateRatchet(session, remoteKey, false);
     // Now swap the ephemeral key and calculate the new sending chain
     const prevCounter = session.getChain(ratchet.ephemeralKeyPair.pubKey);
