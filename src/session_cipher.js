@@ -324,34 +324,6 @@ class SessionCipher {
     return plaintext;
   }
 
-  fillMessageKeys(chain, counter) {
-    if (chain.chainKey.counter >= counter) {
-      // We already have the keys for this counter, no need to fill them again.
-      return;
-    }
-    if (counter - chain.chainKey.counter > 500) {
-      throw new errors.SessionError("Over 500 messages into the future!");
-    }
-    if (chain.chainKey.key === undefined) {
-      throw new errors.SessionError("Chain closed");
-    }
-    /**
-     * TEST CODE
-     * WARN: THIS IS NOT TESTED YET AND MAY NOT WORK AS EXPECTED
-     * PLEASE DONT UPDATE LIBSIGNAL TILL THIS IS TESTED
-     */
-    while (chain.chainKey.counter < counter) {
-      const key = chain.chainKey.key;
-      const nextCounter = chain.chainKey.counter + 1;
-
-      chain.messageKeys[nextCounter] = crypto.calculateMAC(
-        key,
-        Buffer.from([1]),
-      );
-      chain.chainKey.key = crypto.calculateMAC(key, Buffer.from([2]));
-      chain.chainKey.counter = nextCounter;
-    }
-  }
 
   maybeStepRatchet(session, remoteKey, previousCounter) {
     if (session.getChain(remoteKey)) {
