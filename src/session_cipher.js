@@ -336,6 +336,9 @@ class SessionCipher {
         if (previousRatchet.chainKey.key === undefined) {
           throw new errors.SessionError("Chain closed");
         }
+        if (previousCounter - previousRatchet.chainKey.counter > 500) {
+          throw new errors.SessionError("Over 500 messages into the future!");
+        }
         const res = signal.fillMessageKeys(
           previousRatchet.chainKey.key,
           previousRatchet.chainKey.counter,
