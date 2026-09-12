@@ -3,7 +3,7 @@
 "use strict";
 
 const nodeCrypto = require("crypto");
-const assert = require("assert");
+const signal = require("@skidy89/libsignal-plugins");
 // Salts always end up being 32 bytes
 function deriveSecrets(input, salt, info, chunks) {
   // Specific implementation of RFC 5869 that only returns the first 3 32-byte chunks
@@ -13,24 +13,7 @@ function deriveSecrets(input, salt, info, chunks) {
   if (salt.byteLength != 32) {
     throw new Error("Got salt of incorrect length");
   }
-  chunks = chunks || 3;
-  assert(chunks >= 1 && chunks <= 3);
-  const PRK = calculateMAC(salt, input);
-  const infoArray = new Uint8Array(info.byteLength + 1 + 32);
-  infoArray.set(info, 32);
-  infoArray[infoArray.length - 1] = 1;
-  const signed = [calculateMAC(PRK, Buffer.from(infoArray.slice(32)))];
-  if (chunks > 1) {
-    infoArray.set(signed[signed.length - 1]);
-    infoArray[infoArray.length - 1] = 2;
-    signed.push(calculateMAC(PRK, Buffer.from(infoArray)));
-  }
-  if (chunks > 2) {
-    infoArray.set(signed[signed.length - 1]);
-    infoArray[infoArray.length - 1] = 3;
-    signed.push(calculateMAC(PRK, Buffer.from(infoArray)));
-  }
-  return signed;
+  return signal.deriveSecrets(input, salt, info, chunks);
 }
 function assertBuffer(value) {
   if (!(value instanceof Buffer)) {

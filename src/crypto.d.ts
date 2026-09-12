@@ -12,8 +12,3 @@ export function encrypt(
 
 export function calculateMAC(key: Buffer, data: Uint8Array): Uint8Array;
 
-export function deriveSecrets(
-  key: Uint8Array,
-  salt: Buffer,
-  info: Buffer,
-): [Buffer, Buffer];
