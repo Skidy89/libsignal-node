@@ -300,7 +300,7 @@ class SessionCipher {
     }
     const messageKey = chain.messageKeys[message.counter];
     delete chain.messageKeys[message.counter];
-    const keys = signal.deriveSecrets(
+    const keys = crypto.deriveSecrets(
       messageKey,
       Buffer.alloc(32),
       Buffer.from(whisperMsgKeys),
@@ -377,7 +377,7 @@ class SessionCipher {
       remoteKey,
       ratchet.ephemeralKeyPair.privKey,
     );
-    const masterKey = signal.deriveSecrets(
+    const masterKey = crypto.deriveSecrets(
       sharedSecret,
       ratchet.rootKey,
       Buffer.from("WhisperRatchet"),

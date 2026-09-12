@@ -6,7 +6,8 @@ const SessionRecord = require("./session_record");
 const curve = require("./curve");
 const errors = require("./errors");
 const queueJob = require("./queue_job");
-const signal = require("@skidy89/libsignal-plugins");
+
+const crypto = require("./crypto");
 
 class SessionBuilder {
   constructor(storage, protocolAddress) {
@@ -163,7 +164,7 @@ class SessionBuilder {
       );
       sharedSecret.set(new Uint8Array(a4), 32 * 4);
     }
-    const masterKey = signal.deriveSecrets(
+    const masterKey = crypto.deriveSecrets(
       Buffer.from(sharedSecret),
       Buffer.alloc(32),
       Buffer.from("WhisperText"),
@@ -200,7 +201,7 @@ class SessionBuilder {
       remoteKey,
       ratchet.ephemeralKeyPair.privKey,
     );
-    const masterKey = signal.deriveSecrets(
+    const masterKey = crypto.deriveSecrets(
       sharedSecret,
       ratchet.rootKey,
       Buffer.from("WhisperRatchet"),
