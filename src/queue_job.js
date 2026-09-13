@@ -44,7 +44,7 @@ async function _asyncQueueExecutor(queue, cleanup) {
       const job = queue[i];
       try {
         // tricky hehe
-        job.resolve(await withTimeout(job.awaitable, 15000)); // if the job takes longer than 15 seconds, it will be rejected
+        job.resolve(await withTimeout(job.awaitable, 30000)); // if the job takes longer than 15 seconds, it will be rejected
       } catch (e) {
         job.reject(e);
       }
