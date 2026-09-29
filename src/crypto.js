@@ -16,19 +16,19 @@ function deriveSecrets(input, salt, info, chunks) {
   chunks = chunks || 3;
   assert(chunks >= 1 && chunks <= 3);
   const PRK = calculateMAC(salt, input);
-  const infoArray = new Uint8Array(info.byteLength + 1 + 32);
+  const infoArray = Buffer.alloc(info.byteLength + 1 + 32);
   infoArray.set(info, 32);
   infoArray[infoArray.length - 1] = 1;
-  const signed = [calculateMAC(PRK, Buffer.from(infoArray.slice(32)))];
+  const signed = [calculateMAC(PRK, infoArray.subarray(32))];
   if (chunks > 1) {
     infoArray.set(signed[signed.length - 1]);
     infoArray[infoArray.length - 1] = 2;
-    signed.push(calculateMAC(PRK, Buffer.from(infoArray)));
+    signed.push(calculateMAC(PRK, infoArray));
   }
   if (chunks > 2) {
     infoArray.set(signed[signed.length - 1]);
     infoArray[infoArray.length - 1] = 3;
-    signed.push(calculateMAC(PRK, Buffer.from(infoArray)));
+    signed.push(calculateMAC(PRK, infoArray));
   }
   return signed;
 }
@@ -60,7 +60,7 @@ function calculateMAC(key, data) {
   assertBuffer(data);
   const hmac = nodeCrypto.createHmac("sha256", key);
   hmac.update(data);
-  return Buffer.from(hmac.digest());
+  return hmac.digest();
 }
 
 function hash(data) {
@@ -73,11 +73,20 @@ function hash(data) {
 
 
 function verifyMAC(data, key, mac, length) {
-  const calculatedMac = calculateMAC(key, data).slice(0, length);
+  return verifyMACParts([data], key, mac, length);
+}
+
+function verifyMACParts(parts, key, mac, length) {
+  assertBuffer(key);
+  const hmac = nodeCrypto.createHmac("sha256", key);
+  for (const part of parts) {
+    hmac.update(assertBuffer(part));
+  }
+  const calculatedMac = hmac.digest().subarray(0, length);
   if (mac.length !== length || calculatedMac.length !== length) {
     throw new Error("Bad MAC length");
   }
-  if (!mac.equals(calculatedMac)) {
+  if (!nodeCrypto.timingSafeEqual(mac, calculatedMac)) {
     throw new Error("Bad MAC");
   }
 }
@@ -88,5 +97,6 @@ module.exports = {
   hash,
   calculateMAC,
   verifyMAC,
+  verifyMACParts,
   deriveSecrets,
 };

@@ -129,9 +129,9 @@ class SessionBuilder {
     }
     let sharedSecret;
     if (!ourEphemeralKey || !theirEphemeralPubKey) {
-      sharedSecret = new Uint8Array(32 * 4);
+      sharedSecret = Buffer.alloc(32 * 4);
     } else {
-      sharedSecret = new Uint8Array(32 * 5);
+      sharedSecret = Buffer.alloc(32 * 5);
     }
     for (var i = 0; i < 32; i++) {
       sharedSecret[i] = 0xff; // Initialize to all 0xff
@@ -150,22 +150,22 @@ class SessionBuilder {
       ourSignedKey.privKey,
     );
     if (isInitiator) {
-      sharedSecret.set(new Uint8Array(a1), 32);
-      sharedSecret.set(new Uint8Array(a2), 32 * 2);
+      sharedSecret.set(a1, 32);
+      sharedSecret.set(a2, 32 * 2);
     } else {
-      sharedSecret.set(new Uint8Array(a1), 32 * 2);
-      sharedSecret.set(new Uint8Array(a2), 32);
+      sharedSecret.set(a1, 32 * 2);
+      sharedSecret.set(a2, 32);
     }
-    sharedSecret.set(new Uint8Array(a3), 32 * 3);
+    sharedSecret.set(a3, 32 * 3);
     if (ourEphemeralKey && theirEphemeralPubKey) {
       const a4 = curve.calculateAgreement(
         theirEphemeralPubKey,
         ourEphemeralKey.privKey,
       );
-      sharedSecret.set(new Uint8Array(a4), 32 * 4);
+      sharedSecret.set(a4, 32 * 4);
     }
     const masterKey = crypto.deriveSecrets(
-      Buffer.from(sharedSecret),
+      sharedSecret,
       Buffer.alloc(32),
       Buffer.from("WhisperText"),
       3

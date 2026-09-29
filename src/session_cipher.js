@@ -64,7 +64,7 @@ class SessionCipher {
   async encrypt(data) {
     assertBuffer(data);
 
-    const ourIdentityKey = await this.storage.getOurIdentity();
+    const ourIdentityPubKey = (await this.storage.getOurIdentity()).pubKey;
 
     return await this.queueJob(async () => {
       const record = await this.getRecord();
@@ -119,7 +119,7 @@ class SessionCipher {
         session.currentRatchet.previousCounter,
         remoteIdentityKey,
         {
-          ourIdentity: ourIdentityKey.pubKey,
+          ourIdentity: ourIdentityPubKey,
           version: VERSION,
         },
       );
@@ -131,7 +131,7 @@ class SessionCipher {
         type = 3;
 
         const preKeyMsg = protobufs.PreKeyWhisperMessage.create({
-          identityKey: ourIdentityKey.pubKey,
+          identityKey: ourIdentityPubKey,
           registrationId: await this.storage.getOurRegistrationId(),
           baseKey: session.pendingPreKey.baseKey,
           signedPreKeyId: session.pendingPreKey.signedKeyId,
@@ -307,14 +307,22 @@ class SessionCipher {
       3
     );
     const ourIdentityKey = await this.storage.getOurIdentity();
-    const macInput = Buffer.alloc(messageProto.byteLength + 33 * 2 + 1);
-    macInput.set(session.indexInfo.remoteIdentityKey);
-    macInput.set(ourIdentityKey.pubKey, 33);
-    macInput[33 * 2] = this._encodeTupleByte(VERSION, VERSION);
-    macInput.set(messageProto, 33 * 2 + 1);
+    const macVersion = Buffer.from([
+      this._encodeTupleByte(VERSION, VERSION),
+    ]);
     // This is where we most likely fail if the session is not a match.
     // Don't misinterpret this as corruption.
-    crypto.verifyMAC(macInput, keys[1], messageBuffer.slice(-8), 8);
+    crypto.verifyMACParts(
+      [
+        session.indexInfo.remoteIdentityKey,
+        ourIdentityKey.pubKey,
+        macVersion,
+        messageProto,
+      ],
+      keys[1],
+      messageBuffer.slice(-8),
+      8,
+    );
     const plaintext = crypto.decrypt(
       keys[0],
       message.ciphertext,
